@@ -19,28 +19,65 @@ struct change {
 
 change acc;
 
-String line() {
+String line() 
+{
   String str;
   while (1) {
-    if (Serial.available()) {
+    if (Serial.available()) 
+    {
       str = Serial.readString();
       break;
     }
-    delay(100);
   }
   return str;
 }
 
+void arrange()
+{
+  EEPROM.get(0,acc);
+  ms=acc.E_ip;
+  pwd=acc.E_pwd;
+  topic=acc.E_topic;
+  ssid=acc.E_ssid;
+}
+
+
+void set() {
+  acc.E_ssid = ssid;
+  acc.E_pwd = pwd;
+  acc.E_ip = ms;
+  acc.E_topic = topic;
+  EEPROM.put(0, acc);
+  EEPROM.commit();
+  arrange();
+}
+
+void server() {
+  Serial.print("Enter Your Broker IP : ");
+  ms = line();
+  Serial.println(ms);
+  Serial.print("Enter Topic : ");
+  topic = line();
+  Serial.println(topic);
+}
+
+
+void wifi() 
+{
+  WiFi.disconnect(true);
+  Serial.print("Enter Your Hotspot name : ");
+  ssid = line();
+  Serial.println(ssid);
+  Serial.print("Enter You Password : ");
+  pwd = line();
+  Serial.println(pwd);
+  WiFi.begin(ssid, pwd);
+  set();
+}
 
 void value() {
 
-  // Serial.println(" bytes read from Flash . Values are:");
-  // for (int i = 0; i < 512; i++) {
-  //   EEPROM.write(i,255);
-  //   Serial.print(byte(EEPROM.read(i)));
-  //   Serial.print(" ");
-  // }
-  // EEPROM.commit();
+
    Serial.println("-----------------------------------------------------------------------------");
   if (EEPROM.read(0) == 255) {
     Serial.println("EEPROM is empty please enter the all value manually");
@@ -60,26 +97,8 @@ void value() {
 
 
 
-void server() {
-  Serial.print("Enter Your Broker IP : ");
-  ms = line();
-  Serial.println(ms);
-  Serial.print("Enter Topic : ");
-  topic = line();
-  Serial.println(topic);
-}
 
-void wifi() 
-{
-  WiFi.disconnect(true);
-  Serial.print("Enter Your Hotspot name : ");
-  ssid = line();
-  Serial.println(ssid);
-  Serial.print("Enter You Password : ");
-  pwd = line();
-  Serial.println(pwd);
-  WiFi.begin(ssid, pwd);
-}
+
 
 void pref() {
   String choice;
@@ -90,19 +109,12 @@ void pref() {
     wifi();
     server();
     set();
+
   } 
   else
     return;
 }
 
-void set() {
-  acc.E_ssid = ssid;
-  acc.E_pwd = pwd;
-  acc.E_ip = ms;
-  acc.E_topic = topic;
-  EEPROM.put(0, acc);
-  EEPROM.commit();
-}
 
 
 
@@ -143,6 +155,7 @@ void setup() {
     t++;
     if (t == 5) 
     {
+  
       Serial.println();
       wifi();
       t = 0;
